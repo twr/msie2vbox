@@ -16,11 +16,18 @@ touch ${ERR}
 
 usage() {
 cat << EOF
+This program can be used to create a new VirtualBox machine from a Microsoft
+Application Compatibility VPC image.  By default this script will destroy any
+existing VM for the given version of IE; this can be changed by specifying a
+different name using the '-n <name>' option.
+
 Usage: ${SCRIPT_NAME} [options]
 
 OPTIONS:
   -h            Show this message
   -v {6,7,8}    Version to install
+  -m            RAM to allocate (in MB)
+  -n            Name of the Virtual Machine
   -f            Path to existing VPC image
 EOF
 }
