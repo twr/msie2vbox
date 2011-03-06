@@ -39,18 +39,18 @@ then this program will use the existing ISO.
 By default, the VM will not boot when this script is complete.  Use the '-b' arguement
 to boot the VM.
 
->Usage: msie2vbox.sh [-h] -v{6,7,8} [-mN] [-nName] [-f path] [-d path] [-l path] -b
->
->OPTIONS:
->  -h            Show this message
->  -v {6,7,8}    Version to install
->  -m            RAM to allocate (in MB)
->  -n            Name of the Virtual Machine
->  -f            Path to existing VPC image
->  -d            Path to Intel Drivers EXE
->  -l            Path to store VHD files
->  -b            Boot VM on completion.
-
+>Usage: msie2vbox.sh [-h] -v{6,7,8} [-mN] [-nName] [-f path] [-d path] [-l path] -b  
+>  
+>OPTIONS:  
+>  -h            Show this message  
+>  -v {6,7,8}    Version to install  
+>  -m            RAM to allocate (in MB)  
+>  -n            Name of the Virtual Machine  
+>  -f            Path to existing VPC image  
+>  -d            Path to Intel Drivers EXE  
+>  -l            Path to store VHD files  
+>  -b            Boot VM on completion.  
+  
 
 ## Examples
 ### IE 7
