@@ -230,6 +230,8 @@ main() {
   if [ "${AUTO_BOOT}" -eq "1" ]; then
     vboxmanage startvm "${VM_NAME}"
   fi
+
+  clean_and_exit
 }
 
 # Clean up any left overs.
