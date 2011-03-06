@@ -22,11 +22,11 @@
 
 ## Logging / Variables ########################################################
 SCRIPT_NAME=$(basename $0)
-DIR_NAME=$(dirname ${SCRIPT_NAME})
+DIR_NAME=$(dirname $0)
 TMP_DIR="/tmp/${SCRIPT_NAME}.$$.tmp"
 LOG="${TMP_DIR}/${SCRIPT_NAME}.log"
 ERR="${TMP_DIR}/${SCRIPT_NAME}.err"
-GET_URLS="${DIR_NAME}/getvpcurls.py"
+GET_URLS="./getvpcurls.py"
 INTEL_URL="http://downloadmirror.intel.com/18717/eng/PROWin32.exe"
 INTEL_ISO="${TMP_DIR}/INTEL_DRIVERS.ISO"
 INTEL_DIR="${TMP_DIR}/INTEL_DRIVERS"
