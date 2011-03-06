@@ -163,7 +163,7 @@ prepare_intel_drivers() {
     mkdir -p ${INTEL_DIR}
     7z x ${TMP_DIR}"/PROWin32.exe" -o${INTEL_DIR} > /dev/null 2>&1
     mkisofs -o ${INTEL_ISO} ${INTEL_DIR} > /dev/null 2>&1
-    mv ${INTEL_ISO} "${VM_LOC}/INTEL_DRIVERS/"
+    cp ${INTEL_ISO} "${VM_LOC}/INTEL_DRIVERS/"
   fi
 }
 
@@ -181,7 +181,7 @@ prepare_vm() {
   fi
 
   mkdir -p "${VM_LOC}/${VM_NAME}"
-  mv ${VHD_IMAGE} "${VM_LOC}/${VM_NAME}/"
+  cp ${VHD_IMAGE} "${VM_LOC}/${VM_NAME}/"
   VHD_IMAGE="${VM_LOC}/${VM_NAME}/IE${IE_VER}Compat.vhd"
   mkdir -p "${VM_LOC}/INTEL_DRIVERS"
 
@@ -230,8 +230,6 @@ main() {
   if [ "${AUTO_BOOT}" -eq "1" ]; then
     vboxmanage startvm "${VM_NAME}"
   fi
-
-  clean_and_exit
 }
 
 # Clean up any left overs.
