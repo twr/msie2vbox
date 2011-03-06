@@ -80,6 +80,22 @@ to boot the VM.
 
 >`./msie2vbox -v 8 -m 256 -n WinXPIE8 -b`
 
+## *Inconsistencies / Manual Steps
+* The VM is configured without USB support
+* The VM is configured without audio
+* Update the drivers for the ethernet device with those provided on the pre-mounted D:\ drive
+* Validate the VM with Microsoft
+* Install the Virtual Box Guest Additions
+* Disable 'battery' devices
+
+## To Do
+* Remove any existing VM with the same name; failure to do so may result in unexpected behaviour
+  * Detach storage devices
+  * Unregister the VM
+  * Remove storage devices
+* Investigate use of registry files or other some alternative method to automate driver installation
+* Automated installation of Vbox Guest Additions
+
 ## License 
 This work is licensed under the Creative Commons
 Attribution-NonCommercial-ShareAlike 3.0 Unported License. To view a
