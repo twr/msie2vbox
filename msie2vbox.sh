@@ -55,9 +55,24 @@ RATE_LIMIT=""
 usage() {
 cat << EOF
 This program can be used to create a new VirtualBox machine from a Microsoft
-Application Compatibility VPC image.  By default this script will destroy any
-existing VM for the given version of IE; this can be changed by specifying a
-different name using the '-n <name>' option.
+Application Compatibility VPC image.  Since the original Microsoft images
+are built for Microsoft Virtual PC, there are a few 'inconsistencies'*.
+
+The VMs can be installed to a specific location supplied by the '-l <path>' arguement
+or by default to ~/ievpc/.  The VM will be named based on the supplied version of IE,
+e.g. XPSP3_IE6, or by the name supplied by the '-n <name>' arguement.
+
+Each VM will default to 192M RAM; this can be overridden with the '-mN' arguement where
+'N' is the desired amount of RAM to allocate, in megabytes.  This program will
+download the appropriate VPC image, but you can specify the path to a local VPC image
+using the '-f <path>' arguement.
+
+The VMs require the Intel 82540EM network adapter.  Drivers for this are downloaded and
+built into a ready-mounted ISO when the VM is booted.  You will need to manually
+update the network adapter drivers before verifying your VM with Microsoft.
+
+By default, the VM will not boot when this script is complete.  Use the '-b' arguement
+to boot the VM.
 
 Usage: ${SCRIPT_NAME} [-h] -v{6,7,8} [-mN] [-nName] [-f path] [-d path] [-l path] -b
 
