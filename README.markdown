@@ -13,7 +13,7 @@ This script is called from within msie2vbox.sh, which does the majority of the w
 including checking for dependencies, downloading IE VPC images and Intel
 NIC drivers etc.
 
-== Options
+## Options
 This program can be used to create a new VirtualBox machine from a Microsoft
 Application Compatibility VPC image.  Since the original Microsoft images
 are built for Microsoft Virtual PC, there are a few 'inconsistencies'*.
