@@ -137,7 +137,7 @@ get_image() {
       wget $(${GET_URLS} ie${IE_VER}) -P ${TMP_DIR}
     fi
   else
-    cp ${VPC_PATH} ${TMP_DIR}/
+    cp "${VPC_PATH}" "${TMP_DIR}/"
   fi
   # We've either downloaded a VPC image with wget or specified the location
   # to a local image in the command line.  Let's make sure either way, the
@@ -240,8 +240,6 @@ main() {
   clean_and_exit
 }
 
-# Clean up any left overs.
-rm -fr /tmp/${SCRIPT_NAME}.*.tmp
 
 if [ "$#" -eq "0" ]; then
   usage
