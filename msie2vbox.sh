@@ -131,10 +131,16 @@ get_image() {
   # appropriate image from the web.
   if [ -z ${VPC_PATH} ]; then
     printf "Downloading VPC image for ie${IE_VER}...\n"
+
+    DOWNLOAD_URL=""
+    until [ -n "${DOWNLOAD_URL}" ]; do
+      DOWNLOAD_URL=$(${GET_URLS} ie${IE_VER});
+    done
+
     if [ -n "${RATE_LIMIT}" ]; then
-      wget $(${GET_URLS} ie${IE_VER}) --quiet --limit-rate=${RATE_LIMIT} -P ${TMP_DIR}
+      wget ${DOWNLOAD_URL} --quiet --limit-rate=${RATE_LIMIT} -P ${TMP_DIR}
     else
-      wget $(${GET_URLS} ie${IE_VER}) --quiet -P ${TMP_DIR}
+      wget ${DOWNLOAD_URL} --quiet -P ${TMP_DIR}
     fi
   else
     printf "Copying local VPC image for ie${IE_VER} from '${VPC_PATH}' to temp location.\n"
