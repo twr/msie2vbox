@@ -130,13 +130,14 @@ get_image() {
   # If we haven't specified a local VPC location, we need to retrieve the
   # appropriate image from the web.
   if [ -z ${VPC_PATH} ]; then
-    echo "Downloading VPC image..."
+    printf "Downloading VPC image for ie${IE_VER}...\n"
     if [ -n "${RATE_LIMIT}" ]; then
-      wget $(${GET_URLS} ie${IE_VER}) --limit-rate=${RATE_LIMIT} -P ${TMP_DIR}
+      wget $(${GET_URLS} ie${IE_VER}) --quiet --limit-rate=${RATE_LIMIT} -P ${TMP_DIR}
     else
-      wget $(${GET_URLS} ie${IE_VER}) -P ${TMP_DIR}
+      wget $(${GET_URLS} ie${IE_VER}) --quiet -P ${TMP_DIR}
     fi
   else
+    printf "Copying local VPC image for ie${IE_VER} from '${VPC_PATH}' to temp location.\n"
     cp "${VPC_PATH}" "${TMP_DIR}/"
   fi
   # We've either downloaded a VPC image with wget or specified the location
@@ -145,6 +146,7 @@ get_image() {
   VPC_PATH="${TMP_DIR}/XPSP3-IE${IE_VER}.EXE"
 
   # Extract the image from the EXE
+  printf "Extracting VHD file from IE${IE_VER}.EXE...\n"
   7z x ${VPC_PATH} -o${TMP_DIR}/ >/dev/null 2>&1
 
   VHD_IMAGE="${TMP_DIR}/IE${IE_VER}Compat.vhd"
@@ -157,19 +159,23 @@ prepare_intel_drivers() {
     # If we haven't specified a local path, we need to retrieve the
     # drivers from the web.
     if [ -z ${INTEL_PATH} ]; then
-      echo "Downloading Intel drivers..."
+      printf "Downloading Intel drivers...\n"
       if [ -n "${RATE_LIMIT}" ]; then
-        wget ${INTEL_URL} --limit-rate=${RATE_LIMIT} -P ${TMP_DIR}
+        wget ${INTEL_URL} --quiet --limit-rate=${RATE_LIMIT} -P ${TMP_DIR}
       else
-        wget ${INTEL_URL} -P ${TMP_DIR}
+        wget ${INTEL_URL} --quiet -P ${TMP_DIR}
       fi
     else
+      printf "Copying local Intel drivers to temp location.\n"
       cp ${INTEL_PATH} ${TMP_DIR}/
     fi
-    mkdir -p ${INTEL_DIR}
+    mkdir -p ${INTEL_DIR}A
+    printf "Extracting Intel drivers from PROWin32.exe.\n"
     7z x ${TMP_DIR}"/PROWin32.exe" -o${INTEL_DIR} > /dev/null 2>&1
     mkisofs -o ${INTEL_ISO} ${INTEL_DIR} > /dev/null 2>&1
     cp ${INTEL_ISO} "${VM_LOC}/INTEL_DRIVERS/"
+  else
+    printf "Intel drivers already present in ${VM_LOC}...\n"
   fi
 }
 
@@ -178,12 +184,27 @@ prepare_vm() {
   # If we haven't passed in a name, create one based on the current timestamp.
   if [ -z ${VM_NAME} ]; then
     VM_NAME="Windows_XP_IE${IE_VER}_$(date +%s)"
+    printf "No VM name given, setting name as ${VM_NAME}.\n"
   fi
 
   # If we havem't passed in an installation directory, then default to
   # ~/ievpc/.
   if [ -z ${VM_LOC} ]; then
     VM_LOC="${HOME}/ievpc"
+    printf "No VM location given, setting location as ${VM_LOC}.\n"
+  fi
+
+  # Delete and unregister any existing VM with the same name.
+  if [ -d "${VM_LOC}/${VM_NAME}"  ]; then
+    printf "A VM with the given name already exists, unregistering and deleting.\n"
+
+    is_vm_registered=$(vboxmanage list vms | grep ${VM_NAME})
+    if [ -n "${is_vm_registered}" ]; then
+      vboxmanage storagectl ${VM_NAME} --name="IDEController" --controller="PIIX4" --remove
+      vboxmanage unregistervm ${VM_NAME} --delete
+    fi
+
+    rm -fr "${VM_LOC}/${VM_NAME}/*"
   fi
 
   mkdir -p "${VM_LOC}/${VM_NAME}"
@@ -192,38 +213,50 @@ prepare_vm() {
   mkdir -p "${VM_LOC}/INTEL_DRIVERS"
 
   # We need to make a mountable image containing the VM Intel drivers.
+  printf "Preparing Intel drivers...\n"
   prepare_intel_drivers
 
   # Name and register an empty Windows XP VM.
+  printf "Creating and registering VM...\n"
   vboxmanage createvm --name ${VM_NAME} --ostype WindowsXP --register
 
   # Create the IDE controller.
+  printf "Creating and attaching IDE controller...\n"
   vboxmanage storagectl ${VM_NAME} --name "IDEController" --add ide --controller PIIX4
 
   # Set a new/unique UUID for this disk.
+  printf "Resetting UUID for VM...\n"
   vboxmanage internalcommands sethduuid ${VHD_IMAGE}
 
   # Attach the VHD.
+  printf "Attaching VHD to IDE controller...\n"
   vboxmanage storageattach ${VM_NAME} --storagectl IDEController --port 0 --device 0 --type hdd --medium ${VHD_IMAGE}
 
   # Attach the ISO.
+  printf "Attaching Intel Drivers ISO...\n"
   vboxmanage storageattach ${VM_NAME} --storagectl IDEController --port 0 --device 1 --type dvddrive --medium "${VM_LOC}/INTEL_DRIVERS/INTEL_DRIVERS.ISO"
 
   # Set boot priorities.
+  printf "Configuring boot priorities...\n"
   vboxmanage modifyvm ${VM_NAME} --boot1 disk --boot2 none --boot3 none --boot4 none
 
   # Set other hardware.
+  printf "Configuring VM hardware...\n"
   vboxmanage modifyvm ${VM_NAME} --vram 32 --memory ${RAM} --nic1 nat --nictype1 82540EM --cableconnected1 on --audio none --usb off
 }
 
 # Main
 main() {
   # Check dependencies and exit with error if there are any unmet dependencies.
+  printf "Checking dependencies... "
   check_dependencies
   if [ -s ${ERR} ]; then
+    printf "\n"
     cat ${ERR}
     clean_and_exit
   fi
+  printf "Okay\n"
+
 
   # Get the VPC image into a known location, either with wget or copying
   # a local image.
@@ -234,6 +267,7 @@ main() {
 
   # Start VM.
   if [ "${AUTO_BOOT}" -eq "1" ]; then
+    printf "Launching ie${IE_VER} VM...\n"
     vboxmanage startvm "${VM_NAME}"
   fi
 
@@ -286,3 +320,4 @@ done
 
 # Run main()
 main
+
