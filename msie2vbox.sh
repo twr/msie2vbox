@@ -202,15 +202,30 @@ prepare_vm() {
 
   # Delete and unregister any existing VM with the same name.
   if [ -d "${VM_LOC}/${VM_NAME}"  ]; then
-    printf "A VM with the given name already exists, unregistering and deleting.\n"
+    printf "A VM with the given name already exists.\n"
+    while true; do
+      read -p "Continue, replacing this VM?[y/n]" ans
+      case ${ans} in
+        [Yy]* )
+          is_vm_registered=$(vboxmanage list vms | grep ${VM_NAME})
 
-    is_vm_registered=$(vboxmanage list vms | grep ${VM_NAME})
-    if [ -n "${is_vm_registered}" ]; then
-      vboxmanage storagectl ${VM_NAME} --name="IDEController" --controller="PIIX4" --remove
-      vboxmanage unregistervm ${VM_NAME} --delete
-    fi
+          if [ -n "${is_vm_registered}" ]; then
+            vboxmanage storagectl ${VM_NAME} --name="IDEController" --controller="PIIX4" --remove
+            vboxmanage unregistervm ${VM_NAME} --delete
+          fi
 
-    rm -fr "${VM_LOC}/${VM_NAME}/*"
+          rm -fr "${VM_LOC}/${VM_NAME}/*"
+          break
+          ;;
+        [Nn]* )
+          clean_and_exit
+          break
+          ;;
+        * )
+          echo "Please answer 'Y' or 'N'."
+          ;;
+      esac
+    done
   fi
 
   mkdir -p "${VM_LOC}/${VM_NAME}"
@@ -323,6 +338,8 @@ while getopts "hbv:m:n:f:d:l:r:" OPTION; do
       ;;
   esac
 done
+
+trap clean_and_exit INT TERM EXIT
 
 # Run main()
 main
