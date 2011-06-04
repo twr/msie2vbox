@@ -1,23 +1,27 @@
 # Introduction
-msie2vbox is a small application comprised of a bash script, the Python
-BeautifulSoup (ver 3.0.7a) library, and a python script.  The Python script,
+msie2vbox creates VirtualBox machines from the Microsoft Application Compatibility VPC images that Microsoft provide for testing websites in Internet Explorer versions 6, 7 or 8.
+
+The small application comprised of a bash script, the Python
+BeautifulSoup (ver 3.0.7a) library, and a python script.
+
+To run msie2vbox, just execute in a shell, passing in the required version of IE:
+
+>`./msie2vbox.sh -v8`
+
+ The Python script,
 ''getvpcurls.py'' is used to retrieve the direct download URL for the Application
 Compatibility VM for the given version of Internet Explorer.  For example, to
 get the download link for IE6, 
 
 >`./getvpcurls.py ie6`
 
-will return the approrpiate URL.
-
-This script is called from within msie2vbox.sh, which does the majority of the work
-including checking for dependencies, downloading IE VPC images and Intel
-NIC drivers etc.
+will return the appropriate URL.
 
 ## Dependencies
-* Virtual Box
-* 7Zip
-* wget
-* mkisofs
+* [VirtualBox](http://www.virtualbox.org/)
+* [7-Zip](http://www.7-zip.org/download.html) (Available in most package managers as "p7zip")
+* [wget](http://www.gnu.org/software/wget/)
+* [mkisofs](http://freshmeat.net/projects/mkisofs/)
 
 ## Options
 This program can be used to create a new VirtualBox machine from a Microsoft
