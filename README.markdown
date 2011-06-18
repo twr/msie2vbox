@@ -1,3 +1,6 @@
+# TEMPORARILY OBSOLETE
+Microsoft appear to have recently removed the reasonable sized XP IE images.  The only ones I can find are for Windows Vista/7 which come in at around 4Gb+ per download.  Not really practical.  I'll try to find time to update this package to accommodate these downloads, but it may be counter-productive given the time it takes to download the images.
+
 # Introduction
 msie2vbox creates VirtualBox machines from the Microsoft Application Compatibility VPC images that Microsoft provide for testing websites in Internet Explorer versions 6, 7 or 8.
 
