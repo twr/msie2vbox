@@ -30,6 +30,7 @@ GET_URLS="./getvpcurls.py"
 INTEL_URL="http://downloadmirror.intel.com/18717/eng/PROWin32.exe"
 INTEL_ISO="${TMP_DIR}/INTEL_DRIVERS.ISO"
 INTEL_DIR="${TMP_DIR}/INTEL_DRIVERS"
+DOWNLOAD_URL="http://download.microsoft.com/download/B/7/2/B72085AE-0F04-4C6F-9182-BF1EE90F5273/Windows_XP_IE6.exe"
 
 cd ${DIR_NAME}
 
@@ -132,15 +133,10 @@ get_image() {
   if [ -z ${VPC_PATH} ]; then
     printf "Downloading VPC image for ie${IE_VER}...\n"
 
-    DOWNLOAD_URL=""
-    until [ -n "${DOWNLOAD_URL}" ]; do
-      DOWNLOAD_URL=$(${GET_URLS} ie${IE_VER});
-    done
-
     if [ -n "${RATE_LIMIT}" ]; then
-      wget ${DOWNLOAD_URL} --quiet --limit-rate=${RATE_LIMIT} -P ${TMP_DIR}
+      wget ${DOWNLOAD_URL} --limit-rate=${RATE_LIMIT} -P ${TMP_DIR} -O Windows_XP_IE6.exe
     else
-      wget ${DOWNLOAD_URL} --quiet -P ${TMP_DIR}
+      wget ${DOWNLOAD_URL} -P ${TMP_DIR} -O Windows_XP_IE6.exe
     fi
   else
     printf "Copying local VPC image for ie${IE_VER} from '${VPC_PATH}' to temp location.\n"
@@ -149,13 +145,17 @@ get_image() {
   # We've either downloaded a VPC image with wget or specified the location
   # to a local image in the command line.  Let's make sure either way, the
   # file is copied to the same place.
-  VPC_PATH="${TMP_DIR}/XPSP3-IE${IE_VER}.EXE"
+  VPC_PATH="${TMP_DIR}/Windows_XP_IE6.exe"
+  
+  VHD_IMAGE_NAME=`7z l -slt ${VPC_PATH} | egrep "^Path = [^.]*\.vhd$" | sed -e 's/^Path = \(.*\)$/\1/'`
+  
+  printf "VHD image from exe is called ${VHD_IMAGE_NAME}\n"
 
   # Extract the image from the EXE
-  printf "Extracting VHD file from IE${IE_VER}.EXE...\n"
+  printf "Extracting VHD file ${VHD_IMAGE_NAME} from ...\n"
   7z x ${VPC_PATH} -o${TMP_DIR}/ >/dev/null 2>&1
 
-  VHD_IMAGE="${TMP_DIR}/IE${IE_VER}Compat.vhd"
+  VHD_IMAGE="${TMP_DIR}/${VHD_IMAGE_NAME}"
 }
 
 prepare_intel_drivers() {
@@ -229,8 +229,8 @@ prepare_vm() {
   fi
 
   mkdir -p "${VM_LOC}/${VM_NAME}"
-  cp ${VHD_IMAGE} "${VM_LOC}/${VM_NAME}/"
-  VHD_IMAGE="${VM_LOC}/${VM_NAME}/IE${IE_VER}Compat.vhd"
+  cp "${VHD_IMAGE}" "${VM_LOC}/${VM_NAME}/"
+  VHD_IMAGE="${VM_LOC}/${VM_NAME}/${VHD_IMAGE_NAME}"
   mkdir -p "${VM_LOC}/INTEL_DRIVERS"
 
   # We need to make a mountable image containing the VM Intel drivers.
@@ -247,11 +247,11 @@ prepare_vm() {
 
   # Set a new/unique UUID for this disk.
   printf "Resetting UUID for VM...\n"
-  vboxmanage internalcommands sethduuid ${VHD_IMAGE}
+  vboxmanage internalcommands sethduuid "${VHD_IMAGE}"
 
   # Attach the VHD.
   printf "Attaching VHD to IDE controller...\n"
-  vboxmanage storageattach ${VM_NAME} --storagectl IDEController --port 0 --device 0 --type hdd --medium ${VHD_IMAGE}
+  vboxmanage storageattach ${VM_NAME} --storagectl IDEController --port 0 --device 0 --type hdd --medium "${VHD_IMAGE}"
 
   # Attach the ISO.
   printf "Attaching Intel Drivers ISO...\n"
