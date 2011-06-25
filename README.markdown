@@ -1,21 +1,9 @@
 # Introduction
-msie2vbox creates VirtualBox machines from the Microsoft Application Compatibility VPC images that Microsoft provide for testing websites in Internet Explorer versions 6, 7 or 8.
+msie2vbox creates VirtualBox machines from the Microsoft Application Compatibility VPC images that Microsoft provide for testing websites in Internet Explorer versions 6, 7 or 8.  The application only supports downloading and installing the Windows XP VPC image.  This image defaults to IE6 but contains shortcuts to update to IE7 or IE8.  It is recommended that a local copy of the downloaded VPC image be kept to make creating subsequent VirtualBox VMs quicker.
 
-The small application comprised of a bash script, the Python
-BeautifulSoup (ver 3.0.7a) library, and a python script.
+To run msie2vbox, just execute in a shell.
 
-To run msie2vbox, just execute in a shell, passing in the required version of IE:
-
->`./msie2vbox.sh -v8`
-
- The Python script,
-''getvpcurls.py'' is used to retrieve the direct download URL for the Application
-Compatibility VM for the given version of Internet Explorer.  For example, to
-get the download link for IE6, 
-
->`./getvpcurls.py ie6`
-
-will return the appropriate URL.
+>`./msie2vbox.sh`
 
 ## Dependencies
 * [VirtualBox](http://www.virtualbox.org/)
@@ -49,11 +37,10 @@ then this program will use the existing ISO.
 By default, the VM will not boot when this script is complete.  Use the '-b' arguement
 to boot the VM.
 
->Usage: msie2vbox.sh [-h] -v{6,7,8} [-mN] [-nName] [-f path] [-d path] [-l path] -b  
+>Usage: msie2vbox.sh [-h] [-mN] [-nName] [-f path] [-d path] [-l path] -b  
 >  
 >OPTIONS:  
 >  -h            Show this message  
->  -v {6,7,8}    Version to install  
 >  -m            RAM to allocate (in MB)  
 >  -n            Name of the Virtual Machine  
 >  -f            Path to existing VPC image  
@@ -67,22 +54,24 @@ to boot the VM.
 * IE 7
 * Existing local copy of Intel drivers in /home/max/Desktop/PROWin32.exe
 * Default 192Mb RAM
-* Default name of WinXPIE7
-* Default install location of /home/max/ievpc/WinXPIE7
 * Default name of Windows_XP_IE7_$(date +%s)
 * Download the VPC image
   
->`./msie2vbox.sh -v 7 -d /home/max/Desktop/PROWin32.exe`
+>`./msie2vbox.sh -d /home/max/Desktop/PROWin32.exe`
+
+After installation, you will need to use the desktop shortcut to update the machine to IE7.
 
 ### IE8
 * IE8
 * Use 265Mb RAM
-* Name of 'WInXPIE8'
+* Name of 'WinXPIE8'
 * Boot on completion
-* Download Image
+* Specify path to existing VPC executable
 * Download Intel Drivers
 
->`./msie2vbox -v 8 -m 256 -n WinXPIE8 -b`
+>`./msie2vbox -m 256 -f /path/to/Windows_XP_IE6.exe -n WinXPIE8 -b`
+
+After installation, you will need to use the desktop shortcut to update the machine to IE8.
 
 ## *Inconsistencies / Manual Steps
 * The VM is configured without USB support
@@ -93,10 +82,6 @@ to boot the VM.
 * Disable 'battery' devices
 
 ## To Do
-* Remove any existing VM with the same name; failure to do so may result in unexpected behaviour
-  * Detach storage devices
-  * Unregister the VM
-  * Remove storage devices
 * Investigate use of registry files or other some alternative method to automate driver installation
 * Automated installation of Vbox Guest Additions
 

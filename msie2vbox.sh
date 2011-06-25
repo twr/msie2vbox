@@ -4,8 +4,6 @@
 # max@maxmanders.co.uk
 # http://maxmanders.co.uk
 #
-# 2011-03-06
-#
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
@@ -26,7 +24,6 @@ DIR_NAME=$(dirname $0)
 TMP_DIR="/tmp/${SCRIPT_NAME}.$$.tmp"
 LOG="${TMP_DIR}/${SCRIPT_NAME}.log"
 ERR="${TMP_DIR}/${SCRIPT_NAME}.err"
-GET_URLS="./getvpcurls.py"
 INTEL_URL="http://downloadmirror.intel.com/18717/eng/PROWin32.exe"
 INTEL_ISO="${TMP_DIR}/INTEL_DRIVERS.ISO"
 INTEL_DIR="${TMP_DIR}/INTEL_DRIVERS"
@@ -38,8 +35,6 @@ mkdir -p ${TMP_DIR}
 touch ${LOG}
 touch ${ERR}
 
-# The version of IE to download/install
-IE_VER=""
 # The path to a local IE VPC image.
 VPC_PATH=""
 # The path to the extracted VHD image.
@@ -66,8 +61,7 @@ Application Compatibility VPC image.  Since the original Microsoft images
 are built for Microsoft Virtual PC, there are a few 'inconsistencies'*.
 
 The VMs can be installed to a specific location supplied by the '-l <path>' arguement
-or by default to ~/ievpc/.  The VM will be named based on the supplied version of IE,
-e.g. XPSP3_IE6, or by the name supplied by the '-n <name>' arguement.
+or by default to ~/ievpc/.
 
 Each VM will default to 192M RAM; this can be overridden with the '-mN' arguement where
 'N' is the desired amount of RAM to allocate, in megabytes.  This program will
@@ -85,7 +79,6 @@ Usage: ${SCRIPT_NAME} [-h] -v{6,7,8} [-mN] [-nName] [-f path] [-d path] [-l path
 
 OPTIONS:
   -h            Show this message
-  -v {6,7,8}    Version to install
   -m            RAM to allocate (in MB)
   -n            Name of the Virtual Machine
   -f            Path to existing VPC image
@@ -131,7 +124,7 @@ get_image() {
   # If we haven't specified a local VPC location, we need to retrieve the
   # appropriate image from the web.
   if [ -z ${VPC_PATH} ]; then
-    printf "Downloading VPC image for ie${IE_VER}...\n"
+    printf "Downloading VPC image...\n"
 
     if [ -n "${RATE_LIMIT}" ]; then
       wget ${DOWNLOAD_URL} --limit-rate=${RATE_LIMIT} -P ${TMP_DIR} -O Windows_XP_IE6.exe
@@ -139,7 +132,7 @@ get_image() {
       wget ${DOWNLOAD_URL} -P ${TMP_DIR} -O Windows_XP_IE6.exe
     fi
   else
-    printf "Copying local VPC image for ie${IE_VER} from '${VPC_PATH}' to temp location.\n"
+    printf "Copying local VPC image from '${VPC_PATH}' to temp location.\n"
     cp "${VPC_PATH}" "${TMP_DIR}/"
   fi
   # We've either downloaded a VPC image with wget or specified the location
@@ -147,12 +140,12 @@ get_image() {
   # file is copied to the same place.
   VPC_PATH="${TMP_DIR}/Windows_XP_IE6.exe"
   
-  VHD_IMAGE_NAME=`7z l -slt ${VPC_PATH} | egrep "^Path = [^.]*\.vhd$" | sed -e 's/^Path = \(.*\)$/\1/'`
+  VHD_IMAGE_NAME=`7z l -slt ${VPC_PATH} | egrep --color=never "^Path = [^.]*\.vhd$" | sed -e 's/Path = \(.*\)$/\1/'`
   
   printf "VHD image from exe is called ${VHD_IMAGE_NAME}\n"
 
   # Extract the image from the EXE
-  printf "Extracting VHD file ${VHD_IMAGE_NAME} from ...\n"
+  printf "Extracting VHD file ${VHD_IMAGE_NAME}...\n"
   7z x ${VPC_PATH} -o${TMP_DIR}/ >/dev/null 2>&1
 
   VHD_IMAGE="${TMP_DIR}/${VHD_IMAGE_NAME}"
@@ -188,8 +181,8 @@ prepare_intel_drivers() {
 # Configure the VM
 prepare_vm() {
   # If we haven't passed in a name, create one based on the current timestamp.
-  if [ -z ${VM_NAME} ]; then
-    VM_NAME="Windows_XP_IE${IE_VER}_$(date +%s)"
+  if [ -z "${VM_NAME}" ]; then
+    VM_NAME="Windows_XP_IE_$(date +%s)"
     printf "No VM name given, setting name as ${VM_NAME}.\n"
   fi
 
@@ -207,7 +200,7 @@ prepare_vm() {
       read -p "Continue, replacing this VM?[y/n]" ans
       case ${ans} in
         [Yy]* )
-          is_vm_registered=$(vboxmanage list vms | grep ${VM_NAME})
+          is_vm_registered=$(vboxmanage list vms | grep --color=never ${VM_NAME})
 
           if [ -n "${is_vm_registered}" ]; then
             vboxmanage storagectl ${VM_NAME} --name="IDEController" --controller="PIIX4" --remove
@@ -288,18 +281,12 @@ main() {
 
   # Start VM.
   if [ "${AUTO_BOOT}" -eq "1" ]; then
-    printf "Launching ie${IE_VER} VM...\n"
+    printf "Launching VM...\n"
     vboxmanage startvm "${VM_NAME}"
   fi
 
   clean_and_exit
 }
-
-
-if [ "$#" -eq "0" ]; then
-  usage
-  exit 1
-fi
 
 # Process command line args.
 while getopts "hbv:m:n:f:d:l:r:" OPTION; do
@@ -307,9 +294,6 @@ while getopts "hbv:m:n:f:d:l:r:" OPTION; do
     h)
       usage
       exit
-      ;;
-    v)
-      IE_VER=${OPTARG}
       ;;
     m)
       RAM=${OPTARG}
@@ -331,10 +315,6 @@ while getopts "hbv:m:n:f:d:l:r:" OPTION; do
       ;;
     r)
       RATE_LIMIT=${OPTARG}
-      ;;
-    ?)
-      usage
-      exit
       ;;
   esac
 done
