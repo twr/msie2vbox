@@ -8,16 +8,17 @@ To run msie2vbox, just execute in a shell.
 ## Dependencies
 * [VirtualBox](http://www.virtualbox.org/)
 * [7-Zip](http://www.7-zip.org/download.html) (Available in most package managers as "p7zip")
-* [wget](http://www.gnu.org/software/wget/)
+* [curl](http://curl.haxx.se/)
 * [mkisofs](http://freshmeat.net/projects/mkisofs/)
 
 ## Options
 This program can be used to create a new VirtualBox machine from a Microsoft
 Application Compatibility VPC image.  Since the original Microsoft images
-are built for Microsoft Virtual PC, there are a few 'inconsistencies'*.
+are built for Microsoft Virtual PC, there are a few 'inconsistencies'*. At present,
+this script only supports IE6,7,8 under Windows XP.
 
 The VMs can be installed to a specific location supplied by the '-l <path>' arguement
-or by default to ~/ievpc/.  The VM will be named based on the supplied version of IE,
+or by default to ~/vbox/.  The VM will be named based on the supplied version of IE,
 e.g. 'Windows_XP_IE7_$(date +%s)', or by the name supplied by the '-n <name>' arguement.
 
 Each VM will default to 192M RAM; this can be overridden with the '-mN' arguement where
