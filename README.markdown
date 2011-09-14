@@ -1,5 +1,5 @@
 # Introduction
-msie2vbox creates VirtualBox machines from the Microsoft Application Compatibility VPC images that Microsoft provide for testing websites in Internet Explorer versions 6, 7 or 8.  The application only supports downloading and installing the Windows XP VPC image.  This image defaults to IE6 but contains shortcuts to update to IE7 or IE8.  It is recommended that a local copy of the downloaded VPC image be kept to make creating subsequent VirtualBox VMs quicker.
+msie2vbox creates VirtualBox machines from the Microsoft Application Compatibility VPC images that Microsoft provide for testing websites in Internet Explorer versions 6, 7 or 8.  This application only supports downloading and installing the Windows XP VPC image.  This image defaults to IE6 but contains shortcuts to update to IE7 or IE8.  It is recommended that a local copy of the downloaded VPC image be kept to make creating subsequent VirtualBox VMs quicker.
 
 To run msie2vbox, just execute in a shell.
 
@@ -15,11 +15,11 @@ To run msie2vbox, just execute in a shell.
 This program can be used to create a new VirtualBox machine from a Microsoft
 Application Compatibility VPC image.  Since the original Microsoft images
 are built for Microsoft Virtual PC, there are a few 'inconsistencies'*. At present,
-this script only supports IE6,7,8 under Windows XP.
+this script only supports IE 6,7,8 under Windows XP.
 
 The VMs can be installed to a specific location supplied by the '-l <path>' arguement
-or by default to ~/vbox/.  The VM will be named based on the supplied version of IE,
-e.g. 'Windows_XP_IE7_$(date +%s)', or by the name supplied by the '-n <name>' arguement.
+or by default to ~/vbox/.  The VM will be named based on the current timestamp,
+e.g. 'Windows_XP_IE_$(date +%s)', or by the name supplied by the '-n <name>' arguement.
 
 Each VM will default to 192M RAM; this can be overridden with the '-mN' arguement where
 'N' is the desired amount of RAM to allocate, in megabytes.  This program will
@@ -28,12 +28,7 @@ using the '-f <path>' arguement.
 
 The VMs require the Intel 82540EM network adapter.  Drivers for this are downloaded and
 built into a ready-mounted ISO when the VM is booted.  You will need to manually
-update the network adapter drivers before verifying your VM with Microsoft.  If you install
-a VM into a location that already has the Intel Drivers
-
->`/path/to/INTEL_DRIVERS/INTEL_DRIVERS.ISO`
-
-then this program will use the existing ISO.
+update the network adapter drivers before verifying your VM with Microsoft. 
 
 By default, the VM will not boot when this script is complete.  Use the '-b' arguement
 to boot the VM.
@@ -55,7 +50,7 @@ to boot the VM.
 * IE 7
 * Existing local copy of Intel drivers in /home/max/Desktop/PROWin32.exe
 * Default 192Mb RAM
-* Default name of Windows_XP_IE7_$(date +%s)
+* Default name of Windows_XP_IE_$(date +%s)
 * Download the VPC image
   
 >`./msie2vbox.sh -d /home/max/Desktop/PROWin32.exe`
@@ -73,6 +68,16 @@ After installation, you will need to use the desktop shortcut to update the mach
 >`./msie2vbox -m 256 -f /path/to/Windows_XP_IE6.exe -n WinXPIE8 -b`
 
 After installation, you will need to use the desktop shortcut to update the machine to IE8.
+
+After booting the VM for the first time, you will be prompted to activate Windows XP.  Cancel the activation
+for now, and log in using the password 'Password1'.  Open Device Manager, right-click on the ethernet adapter and
+  selected 'Reinstall Driver'.  Search for the driver automatically, and it should install the drivers from the
+  attached CD image.
+
+You should next install the VirtualBox Guest Additions.  Once the installation is complete, you can reboot the VM
+and complete the activiation process; this should work okay.  I've noticed that occasionally installation of the Guest
+Additions causes the machine to appear to crash.  You can powercycle the VM, activate Windows XP, and generally
+the second attempt at installing the Guest Additions works fine.
 
 ## *Inconsistencies / Manual Steps
 * The VM is configured without USB support

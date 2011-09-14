@@ -18,12 +18,6 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-#set -o nounset
-#set -o errtrace
-#set -o errexit
-#set -o pipefail
-
-## Logging / Variables ########################################################
 SCRIPT_NAME=$(basename $0)
 DIR_NAME=$(dirname $0)
 TMP_DIR="/tmp/${SCRIPT_NAME}.$$.tmp"
@@ -46,7 +40,7 @@ RAM="192"
 VM_NAME=""
 # Path to Intel Drivers.
 INTEL_PATH=""
-# Path to store VMs.
+# Path to store downloaded images
 VM_LOC="${HOME}/ievpc"
 # Whether to auto boot the VM
 AUTO_BOOT=0
@@ -56,7 +50,6 @@ RATE_LIMIT=""
 VM_STORE=""
 
 ## Functions ##################################################################
-# Print script usage.
 usage() {
 
 cat << EOF
@@ -64,13 +57,14 @@ This program can be used to create a new VirtualBox machine from a Microsoft
 Application Compatibility VPC image.  Since the original Microsoft images
 are built for Microsoft Virtual PC, there are a few 'inconsistencies'*.
 
-The VMs can be installed to a specific location supplied by the '-l <path>' arguement
-or by default to ~/ievpc/.
+The VMs can be installed to a specific location supplied by the '-l <path>' argument
+or by default to ~/vbox/.
 
-Each VM will default to 192M RAM; this can be overridden with the '-mN' arguement where
+Each VM will default to 192M RAM; this can be overridden with the '-mN' argument where
 'N' is the desired amount of RAM to allocate, in megabytes.  This program will
 download the appropriate VPC image, but you can specify the path to a local VPC image
-using the '-f <path>' arguement.
+using the '-f <path>' arguement.  This latter option is more practical once an initial
+image has been downloaded to save time and bandwidth.
 
 The VMs require the Intel 82540EM network adapter.  Drivers for this are downloaded and
 built into a ready-mounted ISO when the VM is booted.  You will need to manually
@@ -79,7 +73,7 @@ update the network adapter drivers before verifying your VM with Microsoft.
 By default, the VM will not boot when this script is complete.  Use the '-b' arguement
 to boot the VM.
 
-Usage: ${SCRIPT_NAME} [-h] -v{6,7,8} [-mN] [-nName] [-f path] [-d path] [-l path] -b
+Usage: ${SCRIPT_NAME} [-h] [-mN] [-nName] [-f path] [-d path] [-l path] -b
 
 OPTIONS:
   -h            Show this message
@@ -93,6 +87,7 @@ EOF
 }
 
 clean_and_exit() {
+
   rm -fr ${TMP_DIR}
   exit 1;
 }
@@ -242,8 +237,12 @@ prepare_vm() {
   printf "Resetting UUID for VM...\n"
   vboxmanage internalcommands sethduuid "${VHD_IMAGE}"
 
-  # Attach the VHD.
-  printf "Attaching VHD to IDE controller...\n"
+  # Clone VHD to VDI and attach
+  # See http://forums.virtualbox.org/viewtopic.php?f=2&t=43940#p197795
+  printf "Attaching VHD/VDI to IDE controller...\n"
+  vboxmanage clonehd "${VHD_IMAGE}" "${VM_STORE}/${VM_NAME}/${VM_NAME}.vdi" --format=VDI
+  rm -f ${VHD_IMAGE}
+  VHD_IMAGE=${VM_STORE}/${VM_NAME}/${VM_NAME}.vdi
   vboxmanage storageattach ${VM_NAME} --storagectl IDEController --port 0 --device 0 --type hdd --medium "${VHD_IMAGE}"
 
   # Attach the ISO.
@@ -254,13 +253,10 @@ prepare_vm() {
   printf "Configuring boot priorities...\n"
   vboxmanage modifyvm ${VM_NAME} --boot1 disk --boot2 none --boot3 none --boot4 none
 
-  # Enable IO APIC
-  printf "Configuring boot priorities...\n"
-  vboxmanage modifyvm ${VM_NAME} --ioapic on
-
   # Set other hardware.
   printf "Configuring VM hardware...\n"
   vboxmanage modifyvm ${VM_NAME} --vram 32 --memory ${RAM} --nic1 nat --nictype1 82540EM --cableconnected1 on --audio none --usb off
+
 }
 
 main() {
