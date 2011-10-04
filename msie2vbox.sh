@@ -8,7 +8,7 @@
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
-# 
+#
 # This program is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
@@ -168,6 +168,7 @@ prepare_intel_drivers() {
     echo "Extracting Intel drivers from PROWin32.exe."
     7z x ${TMP_DIR}"/PROWin32.exe" -o${INTEL_DIR} -y > /dev/null 2>&1
     mkisofs -o ${INTEL_ISO} ${INTEL_DIR} > /dev/null 2>&1
+    mkdir "${VM_LOC}/INTEL_DRIVERS"
     cp ${INTEL_ISO} "${VM_LOC}/INTEL_DRIVERS/"
   else
     echo "Intel drivers already present in ${VM_LOC}..."
