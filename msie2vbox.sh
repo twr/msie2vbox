@@ -168,7 +168,7 @@ prepare_intel_drivers() {
     echo "Extracting Intel drivers from PROWin32.exe."
     7z x ${TMP_DIR}"/PROWin32.exe" -o${INTEL_DIR} -y > /dev/null 2>&1
     mkisofs -o ${INTEL_ISO} ${INTEL_DIR} > /dev/null 2>&1
-    mkdir "${VM_LOC}/INTEL_DRIVERS"
+    mkdir -p "${VM_LOC}/INTEL_DRIVERS"
     cp ${INTEL_ISO} "${VM_LOC}/INTEL_DRIVERS/"
   else
     echo "Intel drivers already present in ${VM_LOC}..."
