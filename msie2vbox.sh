@@ -8,12 +8,12 @@
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
-# 
+#
 # This program is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
-# 
+#
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
@@ -94,29 +94,29 @@ clean_and_exit() {
 
 check_dependencies() {
 
-  printf "Checking Dependencies...\n"
+  echo "Checking Dependencies..."
 
   is_vbox_installed=$(which vboxmanage)
   if [ -z ${is_vbox_installed} ]; then
-    printf "ERROR: Missing: VirtualBox not installed.\n"
+    echo "ERROR: Missing: VirtualBox not installed."
     exit 1
   fi
 
   is_7zip_installed=$(which 7z)
   if [ -z ${is_7zip_installed} ]; then
-    echo "ERROR: Missing: 7-Zip not installed.\n"
+    echo "ERROR: Missing: 7-Zip not installed."
     exit 1
   fi
 
   is_curl_installed=$(which curl)
   if [ -z ${is_curl_installed} ]; then
-    echo "ERROR: Missing: curl not installed.\n"
+    echo "ERROR: Missing: curl not installed."
     exit 1
   fi
 
   is_mkisofs_installed=$(which mkisofs)
   if [ -z ${is_mkisofs_installed} ]; then
-    echo "ERROR: Missing: mkisofs not installed.\n"
+    echo "ERROR: Missing: mkisofs not installed."
     exit 1
   fi
 }
@@ -126,7 +126,7 @@ get_image() {
   # If we haven't specified a local VPC/EXE location, we need to retrieve the
   # appropriate image from the web.
   if [ -z ${VPC_PATH} ]; then
-    printf "Downloading VPC image...\n"
+    echo "Downloading VPC image..."
     VPC_PATH="${VM_LOC}/Windows_XP_IE6"
 
     if [ -n "${RATE_LIMIT}" ]; then
@@ -135,13 +135,13 @@ get_image() {
       curl --verbose -L ${DOWNLOAD_URL} -o ${VPC_PATH}
     fi
   fi
-  
+
   VHD_IMAGE_NAME=`7z l -slt ${VPC_PATH} | egrep --color=never "^Path = [^.]*\.vhd$" | sed -e 's/Path = \(.*\)$/\1/'`
-  
-  printf "VHD image from exe is called ${VHD_IMAGE_NAME}\n"
+
+  echo "VHD image from exe is called ${VHD_IMAGE_NAME}"
 
   # Extract the image from the EXE
-  printf "Extracting VHD file ${VHD_IMAGE_NAME}...\n"
+  echo "Extracting VHD file ${VHD_IMAGE_NAME}..."
   7z x ${VPC_PATH} -o${VM_LOC}/ -y >/dev/null 2>&1
 
   VHD_IMAGE="${VM_LOC}/${VHD_IMAGE_NAME}"
@@ -149,15 +149,15 @@ get_image() {
 
 prepare_intel_drivers() {
 
-  printf "Preparing Intel drivers...\n"
-  
+  echo "Preparing Intel drivers..."
+
   # If we've installed a VM before using the script, the INTEL_DRIVERS.ISO
   # might already exist in the VM directory.
   if [ ! -f "${VM_LOC}/INTEL_DRIVERS/INTEL_DRIVERS.ISO" ]; then
     # If we haven't specified a local path, we need to retrieve the
     # drivers from the web.
     if [ -z ${INTEL_PATH} ]; then
-      printf "Downloading Intel drivers...\n"
+      echo "Downloading Intel drivers..."
       if [ -n "${RATE_LIMIT}" ]; then
         curl --verbose -L ${INTEL_URL} --limit-rate=${RATE_LIMIT} -o "/tmp/PROWin32.exe"
       else
@@ -165,12 +165,13 @@ prepare_intel_drivers() {
       fi
     fi
     mkdir -p ${INTEL_DIR}
-    printf "Extracting Intel drivers from PROWin32.exe.\n"
+    echo "Extracting Intel drivers from PROWin32.exe."
     7z x ${TMP_DIR}"/PROWin32.exe" -o${INTEL_DIR} -y > /dev/null 2>&1
     mkisofs -o ${INTEL_ISO} ${INTEL_DIR} > /dev/null 2>&1
+    mkdir "${VM_LOC}/INTEL_DRIVERS"
     cp ${INTEL_ISO} "${VM_LOC}/INTEL_DRIVERS/"
   else
-    printf "Intel drivers already present in ${VM_LOC}...\n"
+    echo "Intel drivers already present in ${VM_LOC}..."
   fi
 }
 
@@ -179,19 +180,19 @@ prepare_vm() {
   # If we haven't passed in a name, create one based on the current timestamp.
   if [ -z "${VM_NAME}" ]; then
     VM_NAME="Windows_XP_IE_$(date +%s)"
-    printf "No VM name given, setting name as ${VM_NAME}.\n"
+    echo "No VM name given, setting name as ${VM_NAME}."
   fi
 
   # If we havem't passed in an installation directory, then default to
   # ~/vbox/.
   if [ -z ${VM_STORE} ]; then
     VM_STORE="${HOME}/vbox"
-    printf "No VM location given, setting location as ${VM_STORE}.\n"
+    echo "No VM location given, setting location as ${VM_STORE}."
   fi
 
   # Delete and unregister any existing VM with the same name.
   if [ -d "${VM_STORE}/${VM_NAME}"  ]; then
-    printf "A VM with the given name already exists.\n"
+    echo "A VM with the given name already exists."
     while true; do
       read -p "Continue, replacing this VM?[y/n]" ans
       case ${ans} in
@@ -226,48 +227,48 @@ prepare_vm() {
   prepare_intel_drivers
 
   # Name and register an empty Windows XP VM.
-  printf "Creating and registering VM...\n"
+  echo "Creating and registering VM..."
   vboxmanage createvm --name ${VM_NAME} --ostype WindowsXP --register
 
   # Create the IDE controller.
-  printf "Creating and attaching IDE controller...\n"
+  echo "Creating and attaching IDE controller..."
   vboxmanage storagectl ${VM_NAME} --name "IDEController" --add ide --controller PIIX4
 
   # Set a new/unique UUID for this disk.
-  printf "Resetting UUID for VM...\n"
+  echo "Resetting UUID for VM..."
   vboxmanage internalcommands sethduuid "${VHD_IMAGE}"
 
   # Clone VHD to VDI and attach
   # See http://forums.virtualbox.org/viewtopic.php?f=2&t=43940#p197795
-  printf "Attaching VHD/VDI to IDE controller...\n"
+  echo "Attaching VHD/VDI to IDE controller..."
   vboxmanage clonehd "${VHD_IMAGE}" "${VM_STORE}/${VM_NAME}/${VM_NAME}.vdi" --format=VDI
   rm -f ${VHD_IMAGE}
   VHD_IMAGE=${VM_STORE}/${VM_NAME}/${VM_NAME}.vdi
   vboxmanage storageattach ${VM_NAME} --storagectl IDEController --port 0 --device 0 --type hdd --medium "${VHD_IMAGE}"
 
   # Attach the ISO.
-  printf "Attaching Intel Drivers ISO...\n"
+  echo "Attaching Intel Drivers ISO..."
   vboxmanage storageattach ${VM_NAME} --storagectl IDEController --port 0 --device 1 --type dvddrive --medium "${VM_LOC}/INTEL_DRIVERS/INTEL_DRIVERS.ISO"
 
   # Set boot priorities.
-  printf "Configuring boot priorities...\n"
+  echo "Configuring boot priorities..."
   vboxmanage modifyvm ${VM_NAME} --boot1 disk --boot2 none --boot3 none --boot4 none
 
   # Set other hardware.
-  printf "Configuring VM hardware...\n"
+  echo "Configuring VM hardware..."
   vboxmanage modifyvm ${VM_NAME} --vram 32 --memory ${RAM} --nic1 nat --nictype1 82540EM --cableconnected1 on --audio none --usb off
 
 }
 
 main() {
-  
+
   check_dependencies
   get_image
   prepare_vm
 
   # Start VM.
   if [ "${AUTO_BOOT}" -eq "1" ]; then
-    printf "Launching VM...\n"
+    echo "Launching VM..."
     vboxmanage startvm "${VM_NAME}"
   fi
 
