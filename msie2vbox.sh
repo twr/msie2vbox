@@ -92,41 +92,19 @@ clean_and_exit() {
   exit 1;
 }
 
-check_dependencies() {
-
-  echo "Checking Dependencies..."
-
-  is_vbox_installed=$(which vboxmanage)
-  if [ -z ${is_vbox_installed} ]; then
-    echo "ERROR: Missing: VirtualBox not installed."
-    exit 1
-  fi
-
-  is_7zip_installed=$(which 7z)
-  if [ -z ${is_7zip_installed} ]; then
-    echo "ERROR: Missing: 7-Zip not installed."
-    exit 1
-  fi
-
-  is_curl_installed=$(which curl)
-  if [ -z ${is_curl_installed} ]; then
-    echo "ERROR: Missing: curl not installed."
-    exit 1
-  fi
-
-  is_mkisofs_installed=$(which mkisofs)
-  if [ -z ${is_mkisofs_installed} ]; then
-    echo "ERROR: Missing: mkisofs not installed."
-    exit 1
-  fi
-}
 
 get_image() {
 
-  # If we haven't specified a local VPC/EXE location, we need to retrieve the
+  # If we haven't been given the path to a local VPC executable, then we download the
   # appropriate image from the web.
   if [ -z ${VPC_PATH} ]; then
     echo "Downloading VPC image..."
+
+    # Create download target directory if it doesn't already exist, the default is
+    # ~/ievpc/
+    mkdir -p ${VM_LOC}
+
+    # Destination full pathname for VPC executable download.
     VPC_PATH="${VM_LOC}/Windows_XP_IE6"
 
     if [ -n "${RATE_LIMIT}" ]; then
@@ -136,16 +114,19 @@ get_image() {
     fi
   fi
 
+  # Get the filename of the VHD disk image that will be extracted from the VPC executable.
   VHD_IMAGE_NAME=`7z l -slt ${VPC_PATH} | egrep --color=never "^Path = [^.]*\.vhd$" | sed -e 's/Path = \(.*\)$/\1/'`
 
   echo "VHD image from exe is called ${VHD_IMAGE_NAME}"
 
-  # Extract the image from the EXE
+  # Extract the VHD disk image from the VPC executable and store in the same directory
+  # as the downloaded VPC executable.
   echo "Extracting VHD file ${VHD_IMAGE_NAME}..."
   7z x ${VPC_PATH} -o${VM_LOC}/ -y >/dev/null 2>&1
 
   VHD_IMAGE="${VM_LOC}/${VHD_IMAGE_NAME}"
 }
+
 
 prepare_intel_drivers() {
 
@@ -163,7 +144,10 @@ prepare_intel_drivers() {
       else
         curl --verbose -L ${INTEL_URL} -o "/tmp/PROWin32.exe"
       fi
+    else
+      cp ${INTEL_PATH} ${TMP_DIR}/
     fi
+
     mkdir -p ${INTEL_DIR}
     echo "Extracting Intel drivers from PROWin32.exe."
     7z x ${TMP_DIR}"/PROWin32.exe" -o${INTEL_DIR} -y > /dev/null 2>&1
@@ -174,6 +158,7 @@ prepare_intel_drivers() {
     echo "Intel drivers already present in ${VM_LOC}..."
   fi
 }
+
 
 prepare_vm() {
 
@@ -219,7 +204,7 @@ prepare_vm() {
   fi
 
   mkdir -p "${VM_STORE}/${VM_NAME}"
-  cp "${VHD_IMAGE}" "${VM_STORE}/${VM_NAME}/"
+  mv "${VHD_IMAGE}" "${VM_STORE}/${VM_NAME}/"
   VHD_IMAGE="${VM_STORE}/${VM_NAME}/${VHD_IMAGE_NAME}"
   mkdir -p "${VM_STORE}/INTEL_DRIVERS"
 
@@ -257,16 +242,49 @@ prepare_vm() {
   # Set other hardware.
   echo "Configuring VM hardware..."
   vboxmanage modifyvm ${VM_NAME} --vram 32 --memory ${RAM} --nic1 nat --nictype1 82540EM --cableconnected1 on --audio none --usb off
-
 }
+
+
+check_dependencies() {
+
+  echo "Checking Dependencies..."
+
+  is_vbox_installed=$(which vboxmanage)
+  if [ -z ${is_vbox_installed} ]; then
+    echo "ERROR: Missing: VirtualBox not installed."
+    exit 1
+  fi
+
+  is_7zip_installed=$(which 7z)
+  if [ -z ${is_7zip_installed} ]; then
+    echo "ERROR: Missing: 7-Zip not installed."
+    exit 1
+  fi
+
+  is_curl_installed=$(which curl)
+  if [ -z ${is_curl_installed} ]; then
+    echo "ERROR: Missing: curl not installed."
+    exit 1
+  fi
+
+  is_mkisofs_installed=$(which mkisofs)
+  if [ -z ${is_mkisofs_installed} ]; then
+    echo "ERROR: Missing: mkisofs not installed."
+    exit 1
+  fi
+}
+
 
 main() {
 
+  ## Make sure we have all the required packages.
   check_dependencies
+  ## Download an Windows XP image from MS if necessary.
   get_image
+  ## Prepare and configure the VM.
   prepare_vm
 
-  # Start VM.
+  ## Start VM if appropriate option set.
   if [ "${AUTO_BOOT}" -eq "1" ]; then
     echo "Launching VM..."
     vboxmanage startvm "${VM_NAME}"
@@ -274,6 +292,7 @@ main() {
 
   clean_and_exit
 }
+
 
 # Process command line args.
 while getopts "hbv:m:n:f:d:l:r:" OPTION; do
