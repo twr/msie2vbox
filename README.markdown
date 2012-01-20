@@ -17,20 +17,20 @@ Application Compatibility VPC image.  Since the original Microsoft images
 are built for Microsoft Virtual PC, there are a few 'inconsistencies'*. At present,
 this script only supports IE 6,7,8 under Windows XP.
 
-The VMs can be installed to a specific location supplied by the '-l <path>' arguement
+The VMs can be installed to a specific location supplied by the '-l <path>' argument
 or by default to ~/vbox/.  The VM will be named based on the current timestamp,
-e.g. 'Windows_XP_IE_$(date +%s)', or by the name supplied by the '-n <name>' arguement.
+e.g. 'Windows_XP_IE_$(date +%s)', or by the name supplied by the '-n <name>' argument.
 
-Each VM will default to 192M RAM; this can be overridden with the '-mN' arguement where
+Each VM will default to 192M RAM; this can be overridden with the '-mN' argument where
 'N' is the desired amount of RAM to allocate, in megabytes.  This program will
 download the appropriate VPC image, but you can specify the path to a local VPC image
-using the '-f <path>' arguement.
+using the '-f <path>' argument.
 
 The VMs require the Intel 82540EM network adapter.  Drivers for this are downloaded and
 built into a ready-mounted ISO when the VM is booted.  You will need to manually
 update the network adapter drivers before verifying your VM with Microsoft. 
 
-By default, the VM will not boot when this script is complete.  Use the '-b' arguement
+By default, the VM will not boot when this script is complete.  Use the '-b' argument
 to boot the VM.
 
 >Usage: msie2vbox.sh [-h] [-mN] [-nName] [-f path] [-d path] [-l path] -b  
