@@ -140,9 +140,9 @@ prepare_intel_drivers() {
     if [ -z ${INTEL_PATH} ]; then
       echo "Downloading Intel drivers..."
       if [ -n "${RATE_LIMIT}" ]; then
-        curl --verbose -L ${INTEL_URL} --limit-rate=${RATE_LIMIT} -o "/tmp/PROWin32.exe"
+        curl --verbose -L ${INTEL_URL} --limit-rate=${RATE_LIMIT} -o "${TMP_DIR}/PROWin32.exe"
       else
-        curl --verbose -L ${INTEL_URL} -o "/tmp/PROWin32.exe"
+        curl --verbose -L ${INTEL_URL} -o "${TMP_DIR}/PROWin32.exe"
       fi
     else
       cp ${INTEL_PATH} ${TMP_DIR}/
@@ -206,7 +206,6 @@ prepare_vm() {
   mkdir -p "${VM_STORE}/${VM_NAME}"
   mv "${VHD_IMAGE}" "${VM_STORE}/${VM_NAME}/"
   VHD_IMAGE="${VM_STORE}/${VM_NAME}/${VHD_IMAGE_NAME}"
-  mkdir -p "${VM_STORE}/INTEL_DRIVERS"
 
   # We need to make a mountable image containing the VM Intel drivers.
   prepare_intel_drivers
