@@ -9,7 +9,7 @@ To run msie2vbox, just execute in a shell.
 * [VirtualBox](http://www.virtualbox.org/)
 * [7-Zip](http://www.7-zip.org/download.html) (Available in most package managers as "p7zip")
 * [curl](http://curl.haxx.se/)
-* [mkisofs](http://freshmeat.net/projects/mkisofs/)
+* [mkisofs](http://freshmeat.net/projects/mkisofs/) (Included in package "cdrtools")
 
 ## Options
 This program can be used to create a new VirtualBox machine from a Microsoft
